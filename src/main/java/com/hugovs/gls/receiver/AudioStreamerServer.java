@@ -1,55 +1,56 @@
 package com.hugovs.gls.receiver;
 
+import com.hugovs.gls.receiver.listeners.PlayerListener;
+import com.hugovs.gls.receiver.listeners.ScheduledWavListener;
+
 import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
- * This is the Facade of the audio stream.
+ * Facade of the audio stream.
  */
 public class AudioStreamerServer {
 
     // Properties
-    private int sampleRate = 16000;
-    private int sampleSize = 16;
-    private int bufferSize = 3584;
+    private final int bufferSize; // 1280
 
     // References
-    private AudioPlayer player;
     private AudioReceiver receiver;
     private AudioFormat audioFormat;
 
     public AudioStreamerServer(int sampleRate, int sampleSize, int bufferSize) {
-        this.sampleRate = sampleRate;
-        this.sampleSize = sampleSize;
-        this.bufferSize = bufferSize;
         this.audioFormat = new AudioFormat(sampleRate, sampleSize, 1, true, false);
+        this.bufferSize = bufferSize;
     }
 
     /**
-     * Starts a {@link AudioReceiver} on the given port and plays the audio using the {@link AudioPlayer}.
+     * Starts a {@link AudioReceiver} on the given port.
      * @param port the port to listen to.
      */
-    public void startReceiving(int port) throws IOException {
+    public void startReceiving(int port) {
 
         System.out.println("GLS: Starting server ...");
 
+        // Creates the AudioReceiver and also the listeners
         receiver = new AudioReceiver(port, bufferSize);
-        final AudioInputStream audioInputStream = new AudioInputStream(receiver.getInputStream(), audioFormat, bufferSize);
-        player = new AudioPlayer(audioInputStream);
-
+        receiver.addListener(new ScheduledWavListener());
+        receiver.addListener(new PlayerListener(audioFormat));
         receiver.startReceiving();
-        while (!receiver.isReceiving());
-        player.startPlaying();
-        while (receiver.isReceiving());
+
+        while (!receiver.isReceiving()) {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
 
     }
 
     /**
-     * Stop the {@link AudioReceiver} and the {@link AudioPlayer}.
+     * Stop the {@link AudioReceiver}.
      */
     public void stopReceiving() {
-        player.stopPlaying();
         receiver.stopReceiving();
     }
 

@@ -1,5 +1,8 @@
 package com.hugovs.gls;
 
+import java.text.DateFormat;
+import java.util.Calendar;
+
 public class StringUtils {
 
     private StringUtils() {
