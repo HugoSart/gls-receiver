@@ -1,6 +1,6 @@
 package com.hugovs.gls.receiver;
 
-import com.hugovs.gls.StringUtils;
+import com.hugovs.gls.util.StringUtils;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

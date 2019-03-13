@@ -1,4 +1,4 @@
-package com.hugovs.gls;
+package com.hugovs.gls.util;
 
 /**
  * String utilities.
