@@ -1,7 +1,7 @@
 package com.hugovs.gls.receiver;
 
-import com.hugovs.gls.receiver.listeners.PlayerListener;
-import com.hugovs.gls.receiver.listeners.ScheduledWavListener;
+import com.hugovs.gls.receiver.listeners.SoundPlayer;
+import com.hugovs.gls.receiver.listeners.ScheduledWavDumper;
 
 import javax.sound.sampled.AudioFormat;
 import java.util.concurrent.TimeUnit;
@@ -33,8 +33,8 @@ public class AudioStreamerServer {
 
         // Creates the AudioReceiver and also the listeners
         receiver = new AudioReceiver(port, bufferSize);
-        receiver.addListener(new ScheduledWavListener());
-        receiver.addListener(new PlayerListener(audioFormat));
+        receiver.addListener(new ScheduledWavDumper(audioFormat));
+        receiver.addListener(new SoundPlayer(audioFormat));
         receiver.startReceiving();
 
         while (!receiver.isReceiving()) {

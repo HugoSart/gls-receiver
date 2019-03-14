@@ -108,7 +108,7 @@ public class AudioReceiver {
                     // System.out.println("GLS: Waiting for packets ...");
                     socket.receive(packet);
                     byte[] data = packet.getData();
-                    System.out.println("GLS: Received " + packet.getData().length + " bytes: " + StringUtils.from(packet.getData()));
+                    // System.out.println("GLS: Received " + packet.getData().length + " bytes: " + StringUtils.from(packet.getData()));
                     for (Listener listener : listeners)
                         listener.onDataReceived(data);
                 } catch (IOException e) {

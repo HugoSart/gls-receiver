@@ -7,14 +7,14 @@ import javax.sound.sampled.*;
 /**
  * Listener to play the arrived samples on the default device's {@link SourceDataLine}.
  */
-public class PlayerListener implements AudioReceiver.Listener {
+public class SoundPlayer implements AudioReceiver.Listener {
 
     private static final float VOLUME = 4.0206f;
 
     // Important
     private final SourceDataLine sourceDataLine;
 
-    public PlayerListener(AudioFormat format) {
+    public SoundPlayer(AudioFormat format) {
         sourceDataLine = createSourceDataLine(format);
     }
 

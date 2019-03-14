@@ -1,19 +1,22 @@
 package com.hugovs.gls.receiver.listeners;
 
 import com.hugovs.gls.receiver.AudioReceiver;
+import com.hugovs.gls.util.WavFileCreator;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
+import javax.sound.sampled.AudioFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Listener that dumps all the received samples in a file frequently.
  */
-public class ScheduledWavListener implements AudioReceiver.Listener {
+public class ScheduledWavDumper implements AudioReceiver.Listener {
 
-    private static final int SAMPLES_PER_FILE = 64;
+    private static final int SAMPLES_PER_FILE = 16000;
     private static final int FRAME_LIMIT = 16;
+
+    // Properties
+    private final AudioFormat format;
 
     // Important
     private final List<byte[]> buffer = new ArrayList<>(SAMPLES_PER_FILE);
@@ -21,6 +24,10 @@ public class ScheduledWavListener implements AudioReceiver.Listener {
     // Utils
     private int frameCounter = 0;
     private int pos = 0;
+
+    public ScheduledWavDumper(AudioFormat format) {
+        this.format = format;
+    }
 
     /**
      * Method called when a new data is received by the {@link AudioReceiver}.
@@ -47,22 +54,15 @@ public class ScheduledWavListener implements AudioReceiver.Listener {
      * @param buffer the list to be dumped.
      */
     private void dumpBufferToWav(List<byte[]> buffer) {
-        try {
 
-            // Dump to file
-            FileOutputStream file = new FileOutputStream("frame-" + frameCounter + ".wav");
-            for (byte[] bytes : buffer)
-                file.write(bytes);
-            file.close();
+        // Dump to file
+        WavFileCreator.createFile("frames-" + frameCounter + ".wav", format, buffer);
 
-            // Increment frameCounter
-            frameCounter++;
-            if (frameCounter >= FRAME_LIMIT)
-                frameCounter = 0;
+        // Increment frameCounter
+        frameCounter++;
+        if (frameCounter >= FRAME_LIMIT)
+            frameCounter = 0;
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
 }
