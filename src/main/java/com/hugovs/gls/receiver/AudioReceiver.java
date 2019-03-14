@@ -1,6 +1,7 @@
 package com.hugovs.gls.receiver;
 
 import com.hugovs.gls.util.StringUtils;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -13,6 +14,8 @@ import java.util.List;
  * The {@link AudioReceiver} receive {@link DatagramPacket}s sent to the given port.
  */
 public class AudioReceiver {
+
+    private final Logger log = Logger.getLogger(AudioReceiver.class);
 
     // Utils
     private final List<Listener> listeners = new ArrayList<>();
@@ -38,13 +41,12 @@ public class AudioReceiver {
      */
     public void startReceiving() {
 
-        System.out.println("GLS: Starting receiving ...");
+        log.info("Start receiving ...");
 
         task = new AudioReceiverThread(socket, bufferSize);
         task.listeners = listeners;
         task.start();
 
-        System.out.println("GLS: Server receiving ifconfigstarted!");
     }
 
     /**
@@ -84,6 +86,8 @@ public class AudioReceiver {
      */
     private static class AudioReceiverThread extends Thread {
 
+        private Logger log = Logger.getLogger(AudioReceiverThread.class);
+
         private DatagramSocket socket;
         private int bufferSize;
         private List<Listener> listeners;
@@ -98,7 +102,7 @@ public class AudioReceiver {
 
             byte[] receive = new byte[bufferSize];
 
-            System.out.println("GLS: Audio receiver started!");
+            log.info("Audio Received thread is running");
 
             while (!interrupted()) {
 
@@ -108,22 +112,22 @@ public class AudioReceiver {
                     // System.out.println("GLS: Waiting for packets ...");
                     socket.receive(packet);
                     byte[] data = packet.getData();
-                    // System.out.println("GLS: Received " + packet.getData().length + " bytes: " + StringUtils.from(packet.getData()));
+                    log.debug("Received " + packet.getData().length + " bytes: " + StringUtils.from(packet.getData()));
                     for (Listener listener : listeners)
                         listener.onDataReceived(data);
                 } catch (IOException e) {
-                    System.err.println("GLS: Failed to receive packet -> " + e.getMessage());
+                    log.error("Failed to receive packet: ", e);
                 }
 
             }
 
-            System.out.println("GLS: Audio receiver stopped.");
+
 
         }
     }
 
     /**
-     * Interface to serve as callback on new data arrives.
+     * Interface to act as callback on when data arrive.
      */
     public interface Listener {
         void onDataReceived(byte[] data);

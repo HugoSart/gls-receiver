@@ -29,7 +29,7 @@ public class WavFileCreator {
             WavFile wavFile = WavFile.newWavFile(
                     file,
                     format.getChannels(),
-                    samples.size(),
+                    1280,
                     16,
                     (int)format.getSampleRate()
             );

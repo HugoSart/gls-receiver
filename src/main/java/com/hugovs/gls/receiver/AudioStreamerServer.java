@@ -2,6 +2,7 @@ package com.hugovs.gls.receiver;
 
 import com.hugovs.gls.receiver.listeners.SoundPlayer;
 import com.hugovs.gls.receiver.listeners.ScheduledWavDumper;
+import org.apache.log4j.Logger;
 
 import javax.sound.sampled.AudioFormat;
 import java.util.concurrent.TimeUnit;
@@ -10,6 +11,8 @@ import java.util.concurrent.TimeUnit;
  * Facade of the audio stream.
  */
 public class AudioStreamerServer {
+
+    private final Logger log = Logger.getLogger(AudioStreamerServer.class);
 
     // Properties
     private final int bufferSize; // 1280
@@ -29,7 +32,7 @@ public class AudioStreamerServer {
      */
     public void startReceiving(int port) {
 
-        System.out.println("GLS: Starting server ...");
+        log.info("Starting server ...");
 
         // Creates the AudioReceiver and also the listeners
         receiver = new AudioReceiver(port, bufferSize);
@@ -52,6 +55,7 @@ public class AudioStreamerServer {
      */
     public void stopReceiving() {
         receiver.stopReceiving();
+        log.info("Server stopped.");
     }
 
 }
