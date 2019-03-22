@@ -5,6 +5,9 @@ import com.hugovs.gls.receiver.listeners.ScheduledWavDumper;
 import org.apache.log4j.Logger;
 
 import javax.sound.sampled.AudioFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -13,6 +16,9 @@ import java.util.concurrent.TimeUnit;
 public class AudioStreamerServer {
 
     private final Logger log = Logger.getLogger(AudioStreamerServer.class);
+
+    // Extensions
+    private final Collection<Extension> extensions = new ArrayList<>();
 
     // Properties
     private final int bufferSize; // 1280
@@ -38,6 +44,17 @@ public class AudioStreamerServer {
         receiver = new AudioReceiver(port, bufferSize);
         receiver.addListener(new ScheduledWavDumper(audioFormat));
         receiver.addListener(new SoundPlayer(audioFormat));
+
+        // Load extensions
+        extensions.forEach(extension -> receiver.addListener(extension));
+        extensions.forEach(extension -> {
+            try {
+                extension.onServerStart();
+            } catch (Exception e) {
+                log.error("Failed to start extension " + extension.getClass().getSimpleName(), e);
+            }
+        });
+
         receiver.startReceiving();
 
         while (!receiver.isReceiving()) {
@@ -48,6 +65,23 @@ public class AudioStreamerServer {
             }
         }
 
+        // Unload extensions
+        extensions.forEach(extension -> {
+            try {
+                extension.onServerClose();
+            } catch (Exception e) {
+                log.error("Failed to close extension " + extension.getClass().getSimpleName(), e);
+            }
+        });
+
+    }
+
+    /**
+     * Add one or more server {@link Extension}s.
+     * @param extensions: one or more {@link Extension} to be added.
+     */
+    public void addExtension(Extension ... extensions) {
+        this.extensions.addAll(Arrays.asList(extensions));
     }
 
     /**
@@ -56,6 +90,18 @@ public class AudioStreamerServer {
     public void stopReceiving() {
         receiver.stopReceiving();
         log.info("Server stopped.");
+    }
+
+    public abstract static class Extension implements AudioReceiver.Listener {
+
+        @Override
+        public void onDataReceived(byte[] data) {
+
+        }
+
+        public abstract void onServerStart();
+        public abstract void onServerClose();
+
     }
 
 }
