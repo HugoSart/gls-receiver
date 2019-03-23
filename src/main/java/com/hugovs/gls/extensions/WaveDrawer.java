@@ -129,6 +129,9 @@ public class WaveDrawer extends AudioStreamerServer.Extension {
         // Set the clear color
         glClearColor(0.0f, 0.0f, 0.0f, 0.25f);
 
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         lastTime = glfwGetTime();
         log.info("Inside loop");
         SyncFramerate syncFramerate = new SyncFramerate();
@@ -148,25 +151,24 @@ public class WaveDrawer extends AudioStreamerServer.Extension {
             // Poll for window events. The key callback above will only be
             // invoked during this call.
             glfwPollEvents();
-            syncFramerate.sync(60);
+            //syncFramerate.sync(120);
         }
     }
-
 
     private void render(double deltaTime) {
         byte[] data = dataToRender.getData();
         if (data == null) return;
-        int count = 0;
-        glBegin(GL_LINES);
-        for (int i = 0; i < data.length; i++) {
-            int unsigned = data[i] & 0xFF;
-            float x = ((float) i / ((float) data.length)) * 2 - 1;
-            float y = (float) unsigned / (255f * 2);
+        glBegin(GL_POINTS);
+        int length = data.length;
+        for (int i = 0; i < length; i++) {
+            byte b = data[i];
+            float x = (((float) i) / ((float) length)) * 2f - 1f;
+            float y = (((float) b) / (127f));
+            glColor4f(1, 1, 1, 1f - Math.abs(y));
             glVertex2d(x, y);
-            glVertex2d(x, -y);
-            count++;
         }
         glEnd();
     }
+
 }
 

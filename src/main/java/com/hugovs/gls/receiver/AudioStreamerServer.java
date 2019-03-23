@@ -42,8 +42,8 @@ public class AudioStreamerServer {
 
         // Creates the AudioReceiver and also the listeners
         receiver = new AudioReceiver(port, bufferSize);
-        receiver.addListener(new ScheduledWavDumper(audioFormat));
-        receiver.addListener(new SoundPlayer(audioFormat));
+        // receiver.addListener(new ScheduledWavDumper(audioFormat));
+        // receiver.addListener(new SoundPlayer(audioFormat));
 
         // Load extensions
         extensions.forEach(extension -> receiver.addListener(extension));
