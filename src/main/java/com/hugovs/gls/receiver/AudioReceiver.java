@@ -8,25 +8,33 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * The {@link AudioReceiver} receive {@link DatagramPacket}s sent to the given port.
+ *
+ * @author Hugo Sartori
  */
 public class AudioReceiver {
 
     private final Logger log = Logger.getLogger(AudioReceiver.class);
 
+    // Listeners
+    private final List<DataListener> dataListeners = new ArrayList<>();
+    private final List<DataFilter> dataFilters = new ArrayList<>();
+
     // Utils
-    private final List<Listener> listeners = new ArrayList<>();
     private final DatagramSocket socket;
     private final int bufferSize;
+    private final int metadataSize;
 
     // Thread
     private AudioReceiverThread task;
 
-    public AudioReceiver(int port, int bufferSize) {
+    public AudioReceiver(int port, int bufferSize, int metadataSize) {
         this.bufferSize = bufferSize;
+        this.metadataSize = metadataSize;
 
         try {
             socket = new DatagramSocket(port);
@@ -43,8 +51,9 @@ public class AudioReceiver {
 
         log.info("Start receiving ...");
 
-        task = new AudioReceiverThread(socket, bufferSize);
-        task.listeners = listeners;
+        task = new AudioReceiverThread(socket, bufferSize, metadataSize);
+        task.dataListeners = dataListeners;
+        task.dataFilters = dataFilters;
         task.start();
 
     }
@@ -66,19 +75,37 @@ public class AudioReceiver {
     }
 
     /**
-     * Adds a new listener.
-     * @param listener the listener to be added.
+     * Adds a new dataListener.
+     *
+     * @param dataListener the dataListener to be added.
      */
-    public void addListener(Listener listener) {
-        this.listeners.add(listener);
+    public void addListener(DataListener dataListener) {
+        this.dataListeners.add(dataListener);
     }
 
     /**
-     * Removes a existing listener.
-     * @param listener the listener to be removed.
+     * Removes an existing dataListener.
+     *
+     * @param dataListener the dataListener to be removed.
      */
-    public void removeListener(Listener listener) {
-        this.listeners.remove(listener);
+    public void removeListener(DataListener dataListener) {
+        this.dataListeners.remove(dataListener);
+    }
+
+    /**
+     * Adds a new dataFilter.
+     * @param dataFilter the listener to be added.
+     */
+    public void addFilter(DataFilter dataFilter) {
+        this.dataFilters.add(dataFilter);
+    }
+
+    /**
+     * Removes an existing dataFilter.
+     * @param dataFilter the listener to be removed.
+     */
+    public void removeFilter(DataFilter dataFilter) {
+        this.dataFilters.remove(dataFilter);
     }
 
     /**
@@ -90,17 +117,22 @@ public class AudioReceiver {
 
         private DatagramSocket socket;
         private int bufferSize;
-        private List<Listener> listeners;
+        private int metadataSize;
+        private int totalBufferSize;
+        private List<DataListener> dataListeners;
+        private List<DataFilter> dataFilters;
 
-        AudioReceiverThread(DatagramSocket socket, int bufferSize) {
+        AudioReceiverThread(DatagramSocket socket, int bufferSize, int metadataSize) {
             this.socket = socket;
             this.bufferSize = bufferSize;
+            this.metadataSize = metadataSize;
+            this.totalBufferSize = bufferSize + metadataSize;
         }
 
         @Override
         public void run() {
 
-            byte[] receive = new byte[bufferSize];
+            byte[] receive = new byte[totalBufferSize];
 
             log.info("Audio Received thread is running");
 
@@ -112,9 +144,15 @@ public class AudioReceiver {
                     // System.out.println("GLS: Waiting for packets ...");
                     socket.receive(packet);
                     byte[] data = packet.getData();
+
+                    // Apply dataFilters in insertion order
+                    for (DataFilter dataFilter : dataFilters)
+                        data = dataFilter.filter(data);
+
                     log.debug("Received " + packet.getData().length + " bytes: " + StringUtils.from(packet.getData()));
-                    for (Listener listener : listeners)
-                        listener.onDataReceived(data);
+                    for (DataListener dataListener : dataListeners)
+                        dataListener.onDataReceived(AudioData.wrap(data));
+
                 } catch (IOException e) {
                     log.error("Failed to receive packet: ", e);
                 }
@@ -124,13 +162,6 @@ public class AudioReceiver {
 
 
         }
-    }
-
-    /**
-     * Interface to act as callback on when data arrive.
-     */
-    public interface Listener {
-        void onDataReceived(byte[] data);
     }
 
 }

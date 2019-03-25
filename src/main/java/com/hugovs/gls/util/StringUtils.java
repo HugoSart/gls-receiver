@@ -1,5 +1,7 @@
 package com.hugovs.gls.util;
 
+import java.util.Collection;
+
 /**
  * String utilities.
  */
@@ -14,6 +16,38 @@ public class StringUtils {
      */
     private static final String HEXES = "0123456789ABCDEF";
 
+    public static String join(Collection<?> collection) {
+        StringBuilder builder = new StringBuilder();
+        int count = 0;
+        for (Object o : collection) {
+            builder.append(o.toString());
+            if (count < collection.size() - 1) builder.append(", ");
+            count++;
+        }
+        return builder.toString();
+    }
+
+    /**
+     * Generate a {@link String} of a byte array, separated with spaces.
+     *
+     * @param bytes the byte array to be converted to an hexadecimal {@link String}.
+     * @param hex if the {@link String} needs to be built using hexadecimal representation of bytes.
+     * @return an hexadecimal {@link String} separated with spaces.
+     */
+    public static String from(byte[] bytes, boolean hex) {
+        StringBuilder prt = new StringBuilder("[");
+        int i = 0;
+        for (byte b : bytes) {
+            if (hex) prt.append(getHex(new byte[]{b}));
+            else prt.append(String.format("%4d", b));
+            if (i < bytes.length - 1)
+                prt.append(" ");
+            i++;
+        }
+        prt.append("]");
+        return prt.toString();
+    }
+
     /**
      * Generate a hexadecimal {@link String} of a byte array, separated with spaces.
      *
@@ -21,16 +55,7 @@ public class StringUtils {
      * @return an hexadecimal {@link String} separated with spaces.
      */
     public static String from(byte[] bytes) {
-        StringBuilder prt = new StringBuilder("[");
-        int i = 0;
-        for (byte b : bytes) {
-            prt.append(getHex(new byte[]{b}));
-            if (i < bytes.length - 1)
-                prt.append(" ");
-            i++;
-        }
-        prt.append("]");
-        return prt.toString();
+        return from(bytes, true);
     }
 
     /**

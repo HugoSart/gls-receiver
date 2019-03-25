@@ -50,6 +50,27 @@
             <version>3.2.1</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.lwjgl/lwjgl-stb -->
+        <dependency>
+            <groupId>org.lwjgl</groupId>
+            <artifactId>lwjgl-stb</artifactId>
+            <version>3.2.1</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.lwjgl/lwjgl-stb -->
+        <dependency>
+            <groupId>org.lwjgl</groupId>
+            <artifactId>lwjgl-stb</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sourceforge.argparse4j</groupId>
+            <artifactId>argparse4j</artifactId>
+            <version>0.8.1</version>
+        </dependency>
+
 
     </dependencies>
 

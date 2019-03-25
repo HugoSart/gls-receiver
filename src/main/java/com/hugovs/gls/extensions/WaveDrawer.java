@@ -1,8 +1,10 @@
 package com.hugovs.gls.extensions;
 
-import com.hugovs.gls.receiver.AudioStreamerServer;
+import com.hugovs.gls.receiver.AudioData;
+import com.hugovs.gls.receiver.AudioServerExtension;
+import com.hugovs.gls.receiver.DataListener;
+import com.hugovs.gls.util.ByteUtils;
 import com.hugovs.gls.util.StringUtils;
-import com.hugovs.gls.util.SyncFramerate;
 import com.hugovs.gls.util.SynchronizedData;
 import org.apache.log4j.Logger;
 import org.lwjgl.Version;
@@ -11,22 +13,22 @@ import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 
-import java.awt.*;
 import java.nio.IntBuffer;
+import java.util.Arrays;
 import java.util.Objects;
-import java.util.Queue;
-import java.util.Stack;
-import java.util.Vector;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
 
-import static org.lwjgl.glfw.Callbacks.*;
+import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
-public class WaveDrawer extends AudioStreamerServer.Extension {
+/**
+ * AudioServerExtension to show the received audio data as sound waves graphically.
+ *
+ * @author Hugo Sartori
+ */
+public class WaveDrawer extends AudioServerExtension implements DataListener {
 
     private static final Logger log = Logger.getLogger(WaveDrawer.class);
     private Thread thread;
@@ -37,8 +39,8 @@ public class WaveDrawer extends AudioStreamerServer.Extension {
     private SynchronizedData<byte[]> dataToRender = new SynchronizedData<>();
 
     @Override
-    public void onDataReceived(byte[] data) {
-        dataToRender.setData(data);
+    public void onDataReceived(AudioData audioData) {
+        dataToRender.setData(audioData.getSamples());
     }
 
     @Override
@@ -104,6 +106,7 @@ public class WaveDrawer extends AudioStreamerServer.Extension {
 
         // Make the OpenGL context current
         glfwMakeContextCurrent(window);
+
         // Enable v-sync
         glfwSwapInterval(1);
 
@@ -115,8 +118,6 @@ public class WaveDrawer extends AudioStreamerServer.Extension {
         });
 
     }
-
-    private double lastTime;
 
     private void loop() {
         // This line is critical for LWJGL's interoperation with GLFW's
@@ -132,9 +133,11 @@ public class WaveDrawer extends AudioStreamerServer.Extension {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        lastTime = glfwGetTime();
+        double lastTime = glfwGetTime();
         log.info("Inside loop");
-        SyncFramerate syncFramerate = new SyncFramerate();
+
+        glEnableClientState(GL_VERTEX_ARRAY);
+
         // Run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
         while (!glfwWindowShouldClose(window)) {
@@ -153,21 +156,28 @@ public class WaveDrawer extends AudioStreamerServer.Extension {
             glfwPollEvents();
             //syncFramerate.sync(120);
         }
+
+        glDisableClientState(GL_VERTEX_ARRAY);
     }
 
     private void render(double deltaTime) {
+
+        // Draw wave
         byte[] data = dataToRender.getData();
         if (data == null) return;
-        glBegin(GL_POINTS);
+        glBegin(GL_LINE_LOOP);
         int length = data.length;
+        glVertex2d(-2, 2);
         for (int i = 0; i < length; i++) {
+            if (i % 2 == 0) continue;
             byte b = data[i];
             float x = (((float) i) / ((float) length)) * 2f - 1f;
             float y = (((float) b) / (127f));
-            glColor4f(1, 1, 1, 1f - Math.abs(y));
             glVertex2d(x, y);
         }
+        glVertex2d(2, 2);
         glEnd();
+
     }
 
 }
