@@ -1,13 +1,18 @@
-package com.hugovs.gls.receiver.listeners;
+package com.hugovs.gls.extensions;
 
+import com.hugovs.gls.receiver.AudioData;
 import com.hugovs.gls.receiver.AudioReceiver;
+import com.hugovs.gls.receiver.AudioServerExtension;
+import com.hugovs.gls.receiver.DataListener;
 
 import javax.sound.sampled.*;
 
 /**
- * Listener to play the arrived samples on the default device's {@link SourceDataLine}.
+ * AudioServerExtension to play the arrived samples on the default device's {@link SourceDataLine}.
+ *
+ * @author Hugo Sartori
  */
-public class SoundPlayer implements AudioReceiver.Listener {
+public class SoundPlayer extends AudioServerExtension implements DataListener {
 
     private static final float VOLUME = 4.0206f;
 
@@ -22,11 +27,11 @@ public class SoundPlayer implements AudioReceiver.Listener {
      * Method called when a new data is received by the {@link AudioReceiver}.
      * Plays the byte as a sound on the default {@link SourceDataLine}.
      *
-     * @param data the new data received.
+     * @param audioData the new data received.
      */
     @Override
-    public void onDataReceived(byte[] data) {
-        new Thread(() -> writeToDataLine(data)).start();
+    public void onDataReceived(AudioData audioData) {
+        new Thread(() -> writeToDataLine(audioData.getSamples())).start();
     }
 
     /**
@@ -39,6 +44,7 @@ public class SoundPlayer implements AudioReceiver.Listener {
 
     /**
      * Creates a {@link SourceDataLine} with pre-defined values.
+     *
      * @param format the {@link AudioFormat} of the {@link SourceDataLine} to be created.
      * @return  {@link SourceDataLine}  : if the line is available;
      *          {@code null}            : if don't.
