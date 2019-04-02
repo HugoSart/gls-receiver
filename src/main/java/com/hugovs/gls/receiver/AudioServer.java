@@ -3,7 +3,6 @@ package com.hugovs.gls.receiver;
 import org.apache.log4j.Logger;
 
 import javax.sound.sampled.AudioFormat;
-import java.security.cert.Extension;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -101,7 +100,7 @@ public class AudioServer {
     }
 
     /**
-     * Stop the {@link AudioReceiver}.
+     * Stops the {@link AudioReceiver}.
      */
     public void stopReceiving() {
         receiver.stopReceiving();

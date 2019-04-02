@@ -6,6 +6,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class contains all the data and metadata of the audio received on the server.
+ *
+ * @author Hugo Sartori
+ */
 public class AudioData {
 
     private final long sourceId;
@@ -43,6 +48,14 @@ public class AudioData {
         return properties.containsKey(property);
     }
 
+    /**
+     * Create a new instance of {@link AudioData} from a byte array.
+     * The first 8 bytes are the device's id, the next 8 bytes are the timestamp and the remaining ones
+     * are the audio samples.
+     *
+     * @param data a {@code byte} array to be converted to an instance of {@link AudioData}.
+     * @return an instance of {@link AudioData}.
+     */
     public static AudioData wrap(byte[] data) {
         return new AudioData(
                 ByteUtils.bytesToLong(Arrays.copyOfRange(data, 0, 8)),
