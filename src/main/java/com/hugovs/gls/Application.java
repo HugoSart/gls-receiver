@@ -1,5 +1,6 @@
 package com.hugovs.gls;
 
+import com.hugovs.gls.extensions.BipTriangulator;
 import com.hugovs.gls.extensions.DataExtractor;
 import com.hugovs.gls.extensions.SoundPlayer;
 import com.hugovs.gls.extensions.WaveDrawer;
@@ -41,8 +42,8 @@ public class Application {
         log.info("Extensions: " + StringUtils.join(extensions));
 
         AudioServer audioServer = new AudioServer(sampleRate, sampleSize, bufferSize);
+        audioServer.addExtension(new BipTriangulator(70));
         audioServer.addExtension(extensions);
-        audioServer.addExtension(new DataExtractor());
         audioServer.startReceiving(port);
     }
 

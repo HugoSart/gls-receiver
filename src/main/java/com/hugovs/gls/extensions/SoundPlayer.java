@@ -36,6 +36,7 @@ public class SoundPlayer extends AudioServerExtension implements DataListener {
 
     /**
      * Write a sample to the {@link SourceDataLine}.
+     *
      * @param data the data to be written.
      */
     private void writeToDataLine(byte[] data) {

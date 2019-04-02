@@ -107,6 +107,8 @@ public class AudioServer {
         log.info("AudioServer stopped.");
     }
 
-
+    public AudioFormat getAudioFormat() {
+        return audioFormat;
+    }
 
 }

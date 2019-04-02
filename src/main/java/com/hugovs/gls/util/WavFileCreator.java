@@ -5,6 +5,7 @@ import com.hugovs.wav.WavFileException;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
+import java.util.Collection;
 import java.util.List;
 import java.io.*;
 
@@ -23,7 +24,7 @@ public class WavFileCreator {
         //no instance
     }
 
-    public static void createFile(String path, AudioFormat format, List<byte[]> samples) {
+    public static void createFile(String path, AudioFormat format, Collection<byte[]> samples) {
         try {
             File file = new File(path);
             WavFile wavFile = WavFile.newWavFile(

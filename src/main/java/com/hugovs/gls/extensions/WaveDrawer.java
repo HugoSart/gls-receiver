@@ -33,14 +33,16 @@ public class WaveDrawer extends AudioServerExtension implements DataListener {
     private static final Logger log = Logger.getLogger(WaveDrawer.class);
     private Thread thread;
 
+    private boolean lastBip = false;
+
     // LWJGL
     private long window;
 
-    private SynchronizedData<byte[]> dataToRender = new SynchronizedData<>();
+    private SynchronizedData<AudioData> dataToRender = new SynchronizedData<>();
 
     @Override
     public void onDataReceived(AudioData audioData) {
-        dataToRender.setData(audioData.getSamples());
+        dataToRender.setData(audioData);
     }
 
     @Override
@@ -163,14 +165,24 @@ public class WaveDrawer extends AudioServerExtension implements DataListener {
     private void render(double deltaTime) {
 
         // Draw wave
-        byte[] data = dataToRender.getData();
+        AudioData data = dataToRender.getData();
         if (data == null) return;
+
+        byte[] samples = data.getSamples();
+
+        Object bipObj = data.getProperty("Bip");
+        boolean bip = bipObj != null ? (Boolean)bipObj : false;
+        if (bip != lastBip) {
+            if (bip) glColor3f(1.0f, 0.0f, 0.0f);
+            else glColor3f(1.0f, 1.0f, 1.0f);
+            lastBip = bip;
+        }
+
         glBegin(GL_LINE_LOOP);
-        int length = data.length;
+        int length = samples.length;
         glVertex2d(-2, 2);
-        for (int i = 0; i < length; i++) {
-            if (i % 2 == 0) continue;
-            byte b = data[i];
+        for (int i = 1; i < length; i += 2) {
+            byte b = samples[i];
             float x = (((float) i) / ((float) length)) * 2f - 1f;
             float y = (((float) b) / (127f));
             glVertex2d(x, y);

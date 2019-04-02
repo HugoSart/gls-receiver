@@ -44,7 +44,7 @@ public class DataExtractor extends AudioServerExtension implements DataListener 
     private class LogTask extends TimerTask {
         @Override
         public void run() {
-            log.info("Zero-Crossing-Rate: " + zeroCrossingRate.get(0L));
+            log.info("Zero-Crossing rate: " + zeroCrossingRate.get(0L));
             zeroCrossingRate.put(0L, 0L);
         }
     }

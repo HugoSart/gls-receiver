@@ -149,8 +149,9 @@ public class AudioReceiver {
                         data = dataFilter.filter(data);
 
                     log.debug("Received " + packet.getData().length + " bytes: " + StringUtils.from(packet.getData()));
+                    AudioData audioData = AudioData.wrap(data);
                     for (DataListener dataListener : dataListeners)
-                        dataListener.onDataReceived(AudioData.wrap(data));
+                        dataListener.onDataReceived(audioData);
 
                 } catch (IOException e) {
                     log.error("Failed to receive packet: ", e);
