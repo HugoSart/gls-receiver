@@ -7,7 +7,7 @@
 // http://www.blitter.com/~russtopia/MIDI/~jglatt/tech/wave.htm
 
 // Version 1.0
-package com.hugovs.wav;
+package com.hugovs.gls.receiver.util.wav;
 
 import java.io.*;
 

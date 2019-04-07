@@ -1,4 +1,4 @@
-package com.hugovs.wav;
+package com.hugovs.gls.receiver.util.wav;
 
 public class WavFileException extends Exception {
     public WavFileException() {

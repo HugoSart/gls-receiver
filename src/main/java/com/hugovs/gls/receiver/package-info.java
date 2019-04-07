@@ -19,4 +19,4 @@
  * new set of samples arrives. You can also implement {@link com.hugovs.gls.receiver.AudioFilter} to filter the sound,
  * i. e. remove noise.
  */
-package com.hugovs.gls;
+package com.hugovs.gls.receiver;

@@ -1,11 +1,11 @@
-package com.hugovs.gls;
+package com.hugovs.gls.receiver;
 
-import com.hugovs.gls.extensions.BipTriangulator;
-import com.hugovs.gls.extensions.WaveDrawer;
-import com.hugovs.gls.input.UdpAudioInput;
-import com.hugovs.gls.receiver.AudioServer;
-import com.hugovs.gls.receiver.AudioServerExtension;
-import com.hugovs.util.StringUtils;
+import com.hugovs.gls.core.AudioServer;
+import com.hugovs.gls.core.AudioServerExtension;
+import com.hugovs.gls.core.util.StringUtils;
+import com.hugovs.gls.receiver.extensions.BipTriangulator;
+import com.hugovs.gls.receiver.extensions.WaveDrawer;
+import com.hugovs.gls.receiver.input.UdpAudioInput;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.impl.choice.RangeArgumentChoice;

@@ -1,9 +1,10 @@
-package com.hugovs.gls.extensions;
+package com.hugovs.gls.receiver.extensions;
 
-import com.hugovs.gls.receiver.AudioData;
-import com.hugovs.gls.receiver.AudioListener;
-import com.hugovs.gls.receiver.AudioServerExtension;
-import com.hugovs.util.SynchronizedData;
+import com.hugovs.gls.core.AudioData;
+import com.hugovs.gls.core.AudioInput;
+import com.hugovs.gls.core.AudioListener;
+import com.hugovs.gls.core.AudioServerExtension;
+import com.hugovs.gls.core.util.SynchronizedData;
 import org.apache.log4j.Logger;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -33,10 +34,10 @@ public class WaveDrawer extends AudioServerExtension implements AudioListener {
     private SynchronizedData<AudioData> dataToRender = new SynchronizedData<>();
 
     /**
-     * Method called when data is received from the default {@link com.hugovs.gls.receiver.AudioInput}.
+     * Method called when data is received from the default {@link AudioInput}.
      * Also updates the {@code dataToRender} field to be copied from the render thread.
      *
-     * @param audioData: the {@link AudioData} received from the {@link com.hugovs.gls.receiver.AudioInput}.
+     * @param audioData: the {@link AudioData} received from the {@link AudioInput}.
      */
     @Override
     public void onDataReceived(AudioData audioData) {

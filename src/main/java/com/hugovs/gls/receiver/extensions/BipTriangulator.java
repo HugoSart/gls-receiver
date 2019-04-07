@@ -1,9 +1,9 @@
-package com.hugovs.gls.extensions;
+package com.hugovs.gls.receiver.extensions;
 
-import com.hugovs.gls.receiver.AudioData;
-import com.hugovs.gls.receiver.AudioListener;
-import com.hugovs.gls.receiver.AudioServerExtension;
-import com.hugovs.util.WavFileCreator;
+import com.hugovs.gls.core.AudioData;
+import com.hugovs.gls.core.AudioListener;
+import com.hugovs.gls.core.AudioServerExtension;
+import com.hugovs.gls.receiver.util.WavFileCreator;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;

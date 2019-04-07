@@ -1,7 +1,7 @@
-package com.hugovs.gls.input;
+package com.hugovs.gls.receiver.input;
 
-import com.hugovs.gls.receiver.AudioData;
-import com.hugovs.gls.receiver.AudioInput;
+import com.hugovs.gls.core.AudioData;
+import com.hugovs.gls.core.AudioInput;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -10,7 +10,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 
 /**
- * An {@link AudioInput} implementation that receive audio from udp packets in a given port.
+ * An {@link AudioInput} implementation that receiver audio from udp packets in a given port.
  *
  * @author Hugo Sartori
  */
@@ -51,7 +51,7 @@ public class UdpAudioInput implements AudioInput {
             socket.receive(packet);
             return AudioData.wrap(packet.getData());
         } catch (IOException e) {
-            log.error("Failed to receive packet: ", e);
+            log.error("Failed to receiver packet: ", e);
         }
 
         return null;

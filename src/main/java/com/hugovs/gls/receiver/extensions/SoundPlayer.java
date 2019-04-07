@@ -1,9 +1,9 @@
-package com.hugovs.gls.extensions;
+package com.hugovs.gls.receiver.extensions;
 
-import com.hugovs.gls.receiver.AudioData;
-import com.hugovs.gls.receiver.AudioListener;
-import com.hugovs.gls.receiver.AudioReceiver;
-import com.hugovs.gls.receiver.AudioServerExtension;
+import com.hugovs.gls.core.AudioData;
+import com.hugovs.gls.core.AudioListener;
+import com.hugovs.gls.core.AudioReader;
+import com.hugovs.gls.core.AudioServerExtension;
 
 import javax.sound.sampled.*;
 
@@ -39,7 +39,7 @@ public class SoundPlayer extends AudioServerExtension implements AudioListener {
     }
 
     /**
-     * Method called when a new data is received by the {@link AudioReceiver}.
+     * Method called when a new data is received by the {@link AudioReader}.
      * Plays the byte as a sound on the default {@link SourceDataLine}.
      *
      * @param audioData the new data received.
