@@ -1,12 +1,8 @@
 package com.hugovs.gls.receiver;
 
-import com.hugovs.gls.util.StringUtils;
 import org.apache.log4j.Logger;
 
-import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,27 +16,15 @@ public class AudioReceiver {
     private final Logger log = Logger.getLogger(AudioReceiver.class);
 
     // Listeners
-    private final List<DataListener> dataListeners = new ArrayList<>();
-    private final List<DataFilter> dataFilters = new ArrayList<>();
-
-    // Utils
-    private final DatagramSocket socket;
-    private final int bufferSize;
-    private final int metadataSize;
+    private final AudioInput audioInput;
+    private final List<AudioListener> audioListeners = new ArrayList<>();
+    private final List<AudioFilter> audioFilters = new ArrayList<>();
 
     // Thread
     private AudioReceiverThread task;
 
-    public AudioReceiver(int port, int bufferSize, int metadataSize) {
-        this.bufferSize = bufferSize;
-        this.metadataSize = metadataSize;
-
-        try {
-            socket = new DatagramSocket(port);
-        } catch (SocketException e) {
-            throw new RuntimeException(e);
-        }
-
+    public AudioReceiver(AudioInput audioInput) {
+        this.audioInput = audioInput;
     }
 
     /**
@@ -50,9 +34,9 @@ public class AudioReceiver {
 
         log.info("Start receiving ...");
 
-        task = new AudioReceiverThread(socket, bufferSize, metadataSize);
-        task.dataListeners = dataListeners;
-        task.dataFilters = dataFilters;
+        task = new AudioReceiverThread(audioInput);
+        task.audioListeners = audioListeners;
+        task.audioFilters = audioFilters;
         task.start();
 
     }
@@ -66,45 +50,48 @@ public class AudioReceiver {
 
     /**
      * Checks if the {@link DatagramPacket} are being received.
-     * @return  {@code true} if the receiver are online;
-     *          {@code false} if not.
+     *
+     * @return {@code true} if the receiver are online;
+     * {@code false} if not.
      */
     public boolean isReceiving() {
         return !task.isInterrupted();
     }
 
     /**
-     * Adds a new dataListener.
+     * Adds a new audioListener.
      *
-     * @param dataListener the dataListener to be added.
+     * @param audioListener the audioListener to be added.
      */
-    public void addListener(DataListener dataListener) {
-        this.dataListeners.add(dataListener);
+    public void addListener(AudioListener audioListener) {
+        this.audioListeners.add(audioListener);
     }
 
     /**
-     * Removes an existing dataListener.
+     * Removes an existing audioListener.
      *
-     * @param dataListener the dataListener to be removed.
+     * @param audioListener the audioListener to be removed.
      */
-    public void removeListener(DataListener dataListener) {
-        this.dataListeners.remove(dataListener);
+    public void removeListener(AudioListener audioListener) {
+        this.audioListeners.remove(audioListener);
     }
 
     /**
-     * Adds a new dataFilter.
-     * @param dataFilter the listener to be added.
+     * Adds a new audioFilter.
+     *
+     * @param audioFilter the listener to be added.
      */
-    public void addFilter(DataFilter dataFilter) {
-        this.dataFilters.add(dataFilter);
+    public void addFilter(AudioFilter audioFilter) {
+        this.audioFilters.add(audioFilter);
     }
 
     /**
-     * Removes an existing dataFilter.
-     * @param dataFilter the listener to be removed.
+     * Removes an existing audioFilter.
+     *
+     * @param audioFilter the listener to be removed.
      */
-    public void removeFilter(DataFilter dataFilter) {
-        this.dataFilters.remove(dataFilter);
+    public void removeFilter(AudioFilter audioFilter) {
+        this.audioFilters.remove(audioFilter);
     }
 
     /**
@@ -114,51 +101,35 @@ public class AudioReceiver {
 
         private Logger log = Logger.getLogger(AudioReceiverThread.class);
 
-        private DatagramSocket socket;
-        private int bufferSize;
-        private int metadataSize;
-        private int totalBufferSize;
-        private List<DataListener> dataListeners;
-        private List<DataFilter> dataFilters;
+        private List<AudioListener> audioListeners;
+        private List<AudioFilter> audioFilters;
+        private AudioInput audioInput;
 
-        AudioReceiverThread(DatagramSocket socket, int bufferSize, int metadataSize) {
-            this.socket = socket;
-            this.bufferSize = bufferSize;
-            this.metadataSize = metadataSize;
-            this.totalBufferSize = bufferSize + metadataSize;
+        AudioReceiverThread(AudioInput audioInput) {
+            this.audioInput = audioInput;
         }
 
         @Override
         public void run() {
 
-            byte[] receive = new byte[totalBufferSize];
-
             log.info("Audio Received thread is running");
 
             while (!interrupted()) {
 
-                final DatagramPacket packet = new DatagramPacket(receive, receive.length);
+                if (audioInput == null) continue;
 
-                try {
-                    // System.out.println("GLS: Waiting for packets ...");
-                    socket.receive(packet);
-                    byte[] data = packet.getData();
+                AudioData data = audioInput.read();
+                if (data == null) continue;
 
-                    // Apply dataFilters in insertion order
-                    for (DataFilter dataFilter : dataFilters)
-                        data = dataFilter.filter(data);
+                // Apply audioFilters in insertion order
+                for (AudioFilter audioFilter : audioFilters)
+                    data = audioFilter.filter(data);
 
-                    log.debug("Received " + packet.getData().length + " bytes: " + StringUtils.from(packet.getData()));
-                    AudioData audioData = AudioData.wrap(data);
-                    for (DataListener dataListener : dataListeners)
-                        dataListener.onDataReceived(audioData);
-
-                } catch (IOException e) {
-                    log.error("Failed to receive packet: ", e);
-                }
+                // Call audio listeners
+                for (AudioListener audioListener : audioListeners)
+                    audioListener.onDataReceived(data);
 
             }
-
 
 
         }

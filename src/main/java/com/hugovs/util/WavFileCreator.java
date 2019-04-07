@@ -1,9 +1,8 @@
-package com.hugovs.gls.util;
+package com.hugovs.util;
 
 import com.hugovs.wav.WavFile;
 import com.hugovs.wav.WavFileException;
 
-import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
 import java.util.Collection;
 import java.util.List;

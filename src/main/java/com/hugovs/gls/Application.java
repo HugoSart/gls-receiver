@@ -1,16 +1,18 @@
 package com.hugovs.gls;
 
 import com.hugovs.gls.extensions.BipTriangulator;
-import com.hugovs.gls.extensions.DataExtractor;
-import com.hugovs.gls.extensions.SoundPlayer;
 import com.hugovs.gls.extensions.WaveDrawer;
+import com.hugovs.gls.input.UdpAudioInput;
 import com.hugovs.gls.receiver.AudioServer;
 import com.hugovs.gls.receiver.AudioServerExtension;
-import com.hugovs.gls.util.StringUtils;
+import com.hugovs.util.StringUtils;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.impl.choice.RangeArgumentChoice;
-import net.sourceforge.argparse4j.inf.*;
+import net.sourceforge.argparse4j.inf.ArgumentGroup;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
+import net.sourceforge.argparse4j.inf.ArgumentParserException;
+import net.sourceforge.argparse4j.inf.Namespace;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -37,14 +39,14 @@ public class Application {
         log.info("  - Buffer size: " + bufferSize);
 
         List<AudioServerExtension> extensions = new ArrayList<>();
-        if (ns.getAttrs().containsKey("wave_drawer"))
-            extensions.add(new WaveDrawer());
         log.info("Extensions: " + StringUtils.join(extensions));
 
-        AudioServer audioServer = new AudioServer(sampleRate, sampleSize, bufferSize);
+        AudioServer audioServer = new AudioServer(sampleRate, sampleSize);
+        audioServer.setInput(new UdpAudioInput(55555, bufferSize));
+        audioServer.addExtension(new WaveDrawer());
         audioServer.addExtension(new BipTriangulator(70));
         audioServer.addExtension(extensions);
-        audioServer.startReceiving(port);
+        audioServer.start();
     }
 
     private static Namespace parseArguments(String[] args) {

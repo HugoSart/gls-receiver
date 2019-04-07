@@ -1,16 +1,16 @@
 package com.hugovs.gls.extensions;
 
 import com.hugovs.gls.receiver.AudioData;
+import com.hugovs.gls.receiver.AudioListener;
 import com.hugovs.gls.receiver.AudioServerExtension;
-import com.hugovs.gls.receiver.DataListener;
-import com.hugovs.gls.util.WavFileCreator;
+import com.hugovs.util.WavFileCreator;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class BipTriangulator extends AudioServerExtension implements DataListener {
+public class BipTriangulator extends AudioServerExtension implements AudioListener {
 
     private static final Logger log = Logger.getLogger(BipTriangulator.class);
 

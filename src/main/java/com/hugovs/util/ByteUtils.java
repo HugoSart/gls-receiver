@@ -1,4 +1,4 @@
-package com.hugovs.gls.util;
+package com.hugovs.util;
 
 import java.nio.ByteBuffer;
 

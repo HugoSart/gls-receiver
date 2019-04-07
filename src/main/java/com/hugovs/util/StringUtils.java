@@ -1,9 +1,11 @@
-package com.hugovs.gls.util;
+package com.hugovs.util;
 
 import java.util.Collection;
 
 /**
  * String utilities.
+ *
+ * @author Hugo Sartori
  */
 public class StringUtils {
 
@@ -16,6 +18,12 @@ public class StringUtils {
      */
     private static final String HEXES = "0123456789ABCDEF";
 
+    /**
+     * Join a {@link Collection} into a {@link String} with each element separated with commas.
+     *
+     * @param collection: the {@link Collection} to be joined into a {@link String}.
+     * @return the {@link String} of the joined elements.
+     */
     public static String join(Collection<?> collection) {
         StringBuilder builder = new StringBuilder();
         int count = 0;

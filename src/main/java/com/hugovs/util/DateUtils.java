@@ -1,10 +1,12 @@
-package com.hugovs.gls.util;
+package com.hugovs.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
  * Date utilities.
+ *
+ * @author Hugo Sartori
  */
 public class DateUtils {
 

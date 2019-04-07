@@ -15,8 +15,8 @@
  * All the extensions runs in sequence.
  * If your extension is heavy on resources, it's recommended that you create a new thread to process the data.
  *
- * On your extension you can implement {@link com.hugovs.gls.receiver.DataListener} to perform an action every time a
- * new set of samples arrives. You can also implement {@link com.hugovs.gls.receiver.DataFilter} to filter the sound,
+ * On your extension you can implement {@link com.hugovs.gls.receiver.AudioListener} to perform an action every time a
+ * new set of samples arrives. You can also implement {@link com.hugovs.gls.receiver.AudioFilter} to filter the sound,
  * i. e. remove noise.
  */
 package com.hugovs.gls;

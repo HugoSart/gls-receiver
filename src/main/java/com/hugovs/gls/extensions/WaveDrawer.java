@@ -1,11 +1,9 @@
 package com.hugovs.gls.extensions;
 
 import com.hugovs.gls.receiver.AudioData;
+import com.hugovs.gls.receiver.AudioListener;
 import com.hugovs.gls.receiver.AudioServerExtension;
-import com.hugovs.gls.receiver.DataListener;
-import com.hugovs.gls.util.ByteUtils;
-import com.hugovs.gls.util.StringUtils;
-import com.hugovs.gls.util.SynchronizedData;
+import com.hugovs.util.SynchronizedData;
 import org.apache.log4j.Logger;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -14,7 +12,6 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
-import java.util.Arrays;
 import java.util.Objects;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
@@ -28,35 +25,52 @@ import static org.lwjgl.system.MemoryUtil.NULL;
  *
  * @author Hugo Sartori
  */
-public class WaveDrawer extends AudioServerExtension implements DataListener {
+public class WaveDrawer extends AudioServerExtension implements AudioListener {
 
     private static final Logger log = Logger.getLogger(WaveDrawer.class);
-    private Thread thread;
 
-    private boolean lastBip = false;
-
-    // LWJGL
-    private long window;
-
+    private Thread renderContextThread;
     private SynchronizedData<AudioData> dataToRender = new SynchronizedData<>();
 
+    /**
+     * Method called when data is received from the default {@link com.hugovs.gls.receiver.AudioInput}.
+     * Also updates the {@code dataToRender} field to be copied from the render thread.
+     *
+     * @param audioData: the {@link AudioData} received from the {@link com.hugovs.gls.receiver.AudioInput}.
+     */
     @Override
     public void onDataReceived(AudioData audioData) {
         dataToRender.setData(audioData);
     }
 
+    /**
+     * Method called when the server is started.
+     * Also creates and starts the render thread and window.
+     */
     @Override
     public void onServerStart() {
-        thread = new Thread(this::run);
-        thread.start();
+        renderContextThread = new Thread(this::run);
+        renderContextThread.start();
     }
 
+    /**
+     * Method called when the server is shutdown.
+     * Also interrupt the {@code renderContextThread} to teardown the lwjgl window.
+     */
     @Override
     public void onServerClose() {
-        thread.interrupt();
+        renderContextThread.interrupt();
     }
 
-    public void run() {
+
+    // ============================================================================================================== //
+    // RENDERING                                                                                                      //
+    // ============================================================================================================== //
+
+    private long window;
+    private boolean lastBip = false;
+
+    private void run() {
         log.info("Initializing WaveDrawer with LWJGL " + Version.getVersion() + ".");
 
         init();
@@ -87,7 +101,7 @@ public class WaveDrawer extends AudioServerExtension implements DataListener {
         if (window == NULL)
             throw new RuntimeException("Failed to create the GLFW window");
 
-        // Get the thread stack and push a new frame
+        // Get the renderContextThread stack and push a new frame
         try (MemoryStack stack = stackPush()) {
             IntBuffer pWidth = stack.mallocInt(1); // int*
             IntBuffer pHeight = stack.mallocInt(1); // int*
@@ -124,7 +138,7 @@ public class WaveDrawer extends AudioServerExtension implements DataListener {
     private void loop() {
         // This line is critical for LWJGL's interoperation with GLFW's
         // OpenGL context, or any context that is managed externally.
-        // LWJGL detects the context that is current in the current thread,
+        // LWJGL detects the context that is current in the current renderContextThread,
         // creates the GLCapabilities instance and makes the OpenGL
         // bindings available for use.
         GL.createCapabilities();
@@ -171,7 +185,7 @@ public class WaveDrawer extends AudioServerExtension implements DataListener {
         byte[] samples = data.getSamples();
 
         Object bipObj = data.getProperty("Bip");
-        boolean bip = bipObj != null ? (Boolean)bipObj : false;
+        boolean bip = bipObj != null ? (Boolean) bipObj : false;
         if (bip != lastBip) {
             if (bip) glColor3f(1.0f, 0.0f, 0.0f);
             else glColor3f(1.0f, 1.0f, 1.0f);

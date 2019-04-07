@@ -1,9 +1,9 @@
 package com.hugovs.gls.extensions;
 
 import com.hugovs.gls.receiver.AudioData;
+import com.hugovs.gls.receiver.AudioListener;
 import com.hugovs.gls.receiver.AudioReceiver;
 import com.hugovs.gls.receiver.AudioServerExtension;
-import com.hugovs.gls.receiver.DataListener;
 
 import javax.sound.sampled.*;
 
@@ -12,15 +12,30 @@ import javax.sound.sampled.*;
  *
  * @author Hugo Sartori
  */
-public class SoundPlayer extends AudioServerExtension implements DataListener {
+public class SoundPlayer extends AudioServerExtension implements AudioListener {
 
     private static final float VOLUME = 4.0206f;
 
     // Important
-    private final SourceDataLine sourceDataLine;
+    private SourceDataLine sourceDataLine;
 
-    public SoundPlayer(AudioFormat format) {
-        sourceDataLine = createSourceDataLine(format);
+
+    /**
+     * Method called when the server is started.
+     * Initialize the default {@link SourceDataLine}.
+     */
+    @Override
+    public void onServerStart() {
+        sourceDataLine = createSourceDataLine(getAudioServer().getAudioFormat());
+    }
+
+    /**
+     * Method called when the server is closed.
+     * Closes the default {@link SourceDataLine}.
+     */
+    @Override
+    public void onServerClose() {
+        sourceDataLine.close();
     }
 
     /**
