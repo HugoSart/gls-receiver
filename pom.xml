@@ -32,7 +32,7 @@
         <dependency>
             <groupId>com.github.HugoSart</groupId>
             <artifactId>gls-core</artifactId>
-            <version>b607f639306abc522b34332672fe24297c1fb053</version>
+            <version>b2589c918cb0e850b85021b840013b05b0c6e331</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/log4j/log4j -->
