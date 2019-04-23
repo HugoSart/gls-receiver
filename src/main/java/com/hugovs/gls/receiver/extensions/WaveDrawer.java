@@ -5,6 +5,7 @@ import com.hugovs.gls.core.AudioInput;
 import com.hugovs.gls.core.AudioListener;
 import com.hugovs.gls.core.AudioServerExtension;
 import com.hugovs.gls.core.util.SynchronizedData;
+import org.apache.commons.math3.complex.Complex;
 import org.apache.log4j.Logger;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -13,6 +14,8 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
@@ -204,6 +207,31 @@ public class WaveDrawer extends AudioServerExtension implements AudioListener {
         }
         glVertex2d(2, 2);
         glEnd();
+
+        // if (data.hasProperty("FFTWindows"))
+        //     renderWindow(data);
+
+    }
+
+    private void renderWindow(AudioData data) {
+        final List<Complex[]> fftWindows = (List<Complex[]>) data.getProperty("FFTWindows");
+
+        glBegin(GL_LINE_LOOP);
+        glColor4f(0.0f, 0.25f, 0.0f, 0.05f);
+        glVertex2d(-200, 200);
+        for (Complex[] fftWindow : fftWindows) {
+            int count = 0;
+            for (Complex complex : fftWindow) {
+                double b = complex.getReal();
+                float x = (((float) count) / ((float) data.getSamples().length / 2)) * 8f - 1f;
+                float y = (((float) b) / (127f));
+                glVertex2d(x, y);
+                count++;
+            }
+        }
+        glVertex2d(200, 200);
+        glEnd();
+        glColor4f(1f, 1f, 1f, 0.8f);
 
     }
 
