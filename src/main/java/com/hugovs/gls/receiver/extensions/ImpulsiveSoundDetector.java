@@ -3,12 +3,17 @@ package com.hugovs.gls.receiver.extensions;
 import com.hugovs.gls.core.AudioData;
 import com.hugovs.gls.core.AudioListener;
 import com.hugovs.gls.core.AudioServerExtension;
+import com.hugovs.gls.core.util.StringUtils;
 import com.hugovs.gls.receiver.util.MathUtils;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.transform.DftNormalization;
 import org.apache.commons.math3.transform.FastFourierTransformer;
 import org.apache.commons.math3.transform.TransformType;
 import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * An {@link AudioServerExtension} to detects impulsive sound waves.
@@ -20,6 +25,7 @@ public class ImpulsiveSoundDetector extends AudioServerExtension implements Audi
     private static final Logger log = Logger.getLogger(ImpulsiveSoundDetector.class);
 
     private int windowSize;
+    private List<Complex[]> fftWindows;
 
     /**
      * Do something when the {@link com.hugovs.gls.core.AudioServer} starts.
@@ -27,7 +33,7 @@ public class ImpulsiveSoundDetector extends AudioServerExtension implements Audi
     @Override
     public void onServerStart() {
         super.onServerStart();
-        windowSize = 512;
+        windowSize = 128;
         log.info("Window Size   : " + windowSize);
     }
 
@@ -38,24 +44,25 @@ public class ImpulsiveSoundDetector extends AudioServerExtension implements Audi
      */
     @Override
     public void onDataReceived(AudioData data) {
-        new Thread(() -> {
-            int pos = 0;
-            double[] window = new double[windowSize];
-            byte[] samples = data.getSamples();
+        int pos = 0;
+        double[] window = new double[windowSize];
+        byte[] samples = data.getSamples();
+        fftWindows = new ArrayList<>();
 
-            // Extract windows
-            for (int i = 1; i < samples.length; i += 2, pos++) {
+        // Extract windows
+        for (int i = 1; i < samples.length; i += 2, pos++) {
 
-                // Process window
-                if (i >= windowSize) {
-                    onWindow(data.getTimestamp(), window);
-                    pos = -1;
-                    continue;
-                }
-
-                window[pos] = samples[i];
+            // Process window
+            if (pos >= windowSize || i == samples.length - 1) {
+                onWindow(data.getTimestamp(), window);
+                pos = -1;
+                continue;
             }
-        }).start();
+
+            window[pos] = samples[i];
+        }
+
+        data.putProperty("FFT", fftWindows);
     }
 
     /**
@@ -65,29 +72,31 @@ public class ImpulsiveSoundDetector extends AudioServerExtension implements Audi
      * @param timestamp: the timestamp of the window.
      * @param window: the window itself.
      */
-    private void onWindow(long timestamp, double[] window) {
-        final int start = 150, end = 300;
+    private void onWindow(final long timestamp, final double[] window) {
+        final int start = 38, end = 64;
 
         // Normalize window
-        double[] normalizedWindow = MathUtils.normalize(window);
+        // double[] normalizedWindow = MathUtils.normalize(window);
 
         // Apply Fourier Transform to the window
-        final FastFourierTransformer transformer = new FastFourierTransformer(DftNormalization.STANDARD);
-        final Complex[] ttfWindow = transformer.transform(normalizedWindow, TransformType.FORWARD);
+        final FastFourierTransformer transformer = new FastFourierTransformer(DftNormalization.UNITARY);
+        final Complex[] fftWindow = transformer.transform(window, TransformType.FORWARD);
 
-        // Calculate expectation (E)
-        final Complex expectation = MathUtils.expectation(ttfWindow, start, end);
+        fftWindows.add(fftWindow);
 
-        // Calculate variation (var)
-        final Complex variance = MathUtils.variance(ttfWindow, start, end);
+        // Calculate statistics
+        final Complex[] absWindow = MathUtils.abs(fftWindow);
+        final Complex expectation = MathUtils.expectation(absWindow, start, end);
+        final Complex variance = MathUtils.variance(absWindow, start, end);
 
         // Checks if it is impulsive sound
         if (expectation.getReal() > 0.5 && variance.getReal() > 0.2) {
+            log.info("Impulsive sound detected!");
 
             // Extract sub-array from the transformed window
             double[] numbersToRecognize = new double[end - start];
             for (int i = 0; i < numbersToRecognize.length; i++)
-                numbersToRecognize[i] = ttfWindow[start + i].getReal();
+                numbersToRecognize[i] = fftWindow[start + i].getReal();
 
             // Recognition phase
             recognize(numbersToRecognize);

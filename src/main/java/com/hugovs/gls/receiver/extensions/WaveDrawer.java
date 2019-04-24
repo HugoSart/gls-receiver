@@ -6,6 +6,7 @@ import com.hugovs.gls.core.AudioListener;
 import com.hugovs.gls.core.AudioServerExtension;
 import com.hugovs.gls.core.util.SynchronizedData;
 import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.complex.ComplexUtils;
 import org.apache.log4j.Logger;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -208,30 +209,45 @@ public class WaveDrawer extends AudioServerExtension implements AudioListener {
         glVertex2d(2, 2);
         glEnd();
 
-        // if (data.hasProperty("FFTWindows"))
-        //     renderWindow(data);
+        if (data.hasProperty("FFT"))
+            renderWindow(data);
 
     }
 
     private void renderWindow(AudioData data) {
-        final List<Complex[]> fftWindows = (List<Complex[]>) data.getProperty("FFTWindows");
+        final List<Complex[]> fftWindows = (List<Complex[]>) data.getProperty("FFT");
 
-        glBegin(GL_LINE_LOOP);
-        glColor4f(0.0f, 0.25f, 0.0f, 0.05f);
-        glVertex2d(-200, 200);
-        for (Complex[] fftWindow : fftWindows) {
-            int count = 0;
-            for (Complex complex : fftWindow) {
-                double b = complex.getReal();
-                float x = (((float) count) / ((float) data.getSamples().length / 2)) * 8f - 1f;
-                float y = (((float) b) / (127f));
-                glVertex2d(x, y);
-                count++;
-            }
+        float aux = fftWindows.get(0).length * 8;
+        int k = 0;
+        float xOffset = -1f;
+
+        glColor4f(0, 1, 0, 0.1f);
+        for (final Complex complex : fftWindows.get(0)) {
+            double y = Math.abs(complex.getReal()) / 10 - 1;
+            glBegin(GL_QUADS);
+            glVertex2d(k / aux + xOffset, -1);
+            glVertex2d(k / aux + xOffset, y);
+            glVertex2d((k + 8) / aux + xOffset, y);
+            glVertex2d((k + 8) / aux + xOffset, -1);
+            glEnd();
+            k += 16;
         }
-        glVertex2d(200, 200);
-        glEnd();
-        glColor4f(1f, 1f, 1f, 0.8f);
+
+        k = 0;
+        xOffset = -1f;
+        glColor4f(0, 0, 1, 0.1f);
+        for (final Complex complex : fftWindows.get(fftWindows.size() - 1)) {
+            double y = Math.abs(complex.getReal()) / 10;
+            glBegin(GL_QUADS);
+            glVertex2d(k / aux + xOffset, 1);
+            glVertex2d(k / aux + xOffset, 1 - y);
+            glVertex2d((k + 8) / aux + xOffset, 1 - y);
+            glVertex2d((k + 8) / aux + xOffset, 1);
+            glEnd();
+            k += 16;
+        }
+
+        glColor4f(1, 1, 1, 0.5f);
 
     }
 

@@ -1,23 +1,14 @@
 package com.hugovs.gls.receiver.util;
 
 import org.apache.commons.math3.complex.Complex;
+import org.apache.log4j.Logger;
 
 public class MathUtils {
 
+    private static final Logger log = Logger.getLogger(MathUtils.class);
+
     private MathUtils() {
         //no instance
-    }
-
-    public static int nearestPowerOf2(int number) {
-        return 32 - Integer.numberOfLeadingZeros(number - 1);
-    }
-
-    public static int compare(Complex c1, Complex c2) {
-        if (c1.getReal() > c2.getReal()) return -1;
-        else if (c1.getReal() < c2.getReal()) return 1;
-        if (c1.getImaginary() > c2.getImaginary()) return -1;
-        else if (c1.getImaginary() < c2.getImaginary()) return 1;
-        return 0;
     }
 
     public static double[] normalize(double[] numbers) {
@@ -35,61 +26,44 @@ public class MathUtils {
         return higher;
     }
 
-    public static Complex higher(Complex[] numbers) {
-        Complex higher = new Complex(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY);
-        for (Complex number : numbers)
-            if (compare(number, higher) == -1) higher = number;
-        return higher;
-    }
-
-    public static double mean(double[] numbers) {
-        double sum = 0.0;
-        for (double number : numbers)
-            sum += number;
-        return sum / numbers.length;
-    }
-
-    public static Complex mean(Complex[] numbers) {
+    public static Complex mean(Complex[] numbers, int start, int end) {
+        checkSubarrayArguments(numbers, start, end);
+        int length = end - start + 1;
         Complex sum =  new Complex(0d, 0d);
-        for (Complex number : numbers)
-            sum.add(number);
-        return sum.divide(numbers.length);
-    }
-
-    public static double variance(double[] numbers) {
-        double mean = mean(numbers);
-        double temp = 0;
-        for (double number : numbers)
-            temp += Math.pow(number, 2);
-        return temp / (numbers.length - 1);
-    }
-
-    public static Complex variance(Complex[] numbers) {
-        return variance(numbers, 0, numbers.length);
+        for (int i = start; i <= end; i++)
+            sum = sum.add(numbers[i]);
+        return sum.divide(length);
     }
 
     public static Complex variance(Complex[] numbers, int start, int end) {
-        if (start < 0 || end < 0 || end < start || end > numbers.length) throw new IllegalArgumentException();
-        Complex mean = mean(numbers);
+        checkSubarrayArguments(numbers, start, end);
+        int length = end - start + 1;
+        Complex mean = mean(numbers, start, end);
         Complex temp = new Complex(0d, 0d);
-        for (int i = start; i < end; i++) {
-            Complex number = numbers[i];
-            temp.add((number.subtract(mean)).pow(2));
-        }
-        return temp.divide(numbers.length - 1);
+        for (int i = start; i <= end; i++)
+            temp = temp.add((numbers[i].subtract(mean)).pow(2));
+        return temp.divide(length - 1);
     }
 
     public static Complex expectation(Complex[] numbers, int start, int end) {
-        if (start < 0 || end < 0 || end < start || end > numbers.length) throw new IllegalArgumentException();
-        Complex prob = new Complex(1.0 / (double)numbers.length);
+        checkSubarrayArguments(numbers, start, end);
+        int length = end - start + 1;
+        Complex prob = new Complex(1.0 / (double)length);
         Complex sum = new Complex(0d, 0d);
-        for (int i = start; i < end; i++)
-            sum.add(numbers[i]).multiply(prob);
+        for (int i = start; i <= end; i++)
+            sum = sum.add(numbers[i]).multiply(prob);
         return sum;
     }
 
-    public static Complex expectation(Complex[] numbers) {
-        return expectation(numbers, 0, numbers.length);
+    public static Complex[] abs(final Complex[] complexes) {
+        final Complex[] absComplexes = new Complex[complexes.length];
+        for (int i = 0; i < complexes.length; i++)
+            absComplexes[i] = new Complex(complexes[i].abs());
+        return absComplexes;
+    }
+
+    private static void checkSubarrayArguments(Object[] numbers, int start, int end) {
+        if (start < 0 || end < 0 || end < start || end > numbers.length) throw new IllegalArgumentException();
     }
 
 }
