@@ -91,6 +91,22 @@
             <version>3.6.1</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.9</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/de.sciss/sphinx4-core -->
+        <dependency>
+            <groupId>de.sciss</groupId>
+            <artifactId>sphinx4-core</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+
+
+
 
     </dependencies>
 

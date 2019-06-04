@@ -3,7 +3,6 @@ package com.hugovs.gls.receiver.extensions;
 import com.hugovs.gls.core.AudioData;
 import com.hugovs.gls.core.AudioListener;
 import com.hugovs.gls.core.AudioServerExtension;
-import com.hugovs.gls.core.util.StringUtils;
 import com.hugovs.gls.receiver.util.MathUtils;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.transform.DftNormalization;
@@ -25,7 +24,9 @@ public class ImpulsiveSoundDetector extends AudioServerExtension implements Audi
     private static final Logger log = Logger.getLogger(ImpulsiveSoundDetector.class);
 
     private int windowSize;
+    private int windowsSizePowerOfTwo;
     private List<Complex[]> fftWindows;
+    private List<double[]> impWindows;
 
     /**
      * Do something when the {@link com.hugovs.gls.core.AudioServer} starts.
@@ -33,8 +34,10 @@ public class ImpulsiveSoundDetector extends AudioServerExtension implements Audi
     @Override
     public void onServerStart() {
         super.onServerStart();
-        windowSize = 128;
+        windowSize = 99;
+        windowsSizePowerOfTwo = Math.max(2, 2 * Integer.highestOneBit(windowSize - 1));
         log.info("Window Size   : " + windowSize);
+        log.info("Power of two  : " + windowsSizePowerOfTwo);
     }
 
     /**
@@ -48,13 +51,15 @@ public class ImpulsiveSoundDetector extends AudioServerExtension implements Audi
         double[] window = new double[windowSize];
         byte[] samples = data.getSamples();
         fftWindows = new ArrayList<>();
+        impWindows = new ArrayList<>();
 
         // Extract windows
         for (int i = 1; i < samples.length; i += 2, pos++) {
 
             // Process window
             if (pos >= windowSize || i == samples.length - 1) {
-                onWindow(data.getTimestamp(), window);
+                if (isImpulsive(data.getTimestamp(), window))
+                    this.impWindows.add(window);
                 pos = -1;
                 continue;
             }
@@ -62,25 +67,25 @@ public class ImpulsiveSoundDetector extends AudioServerExtension implements Audi
             window[pos] = samples[i];
         }
 
+        data.putProperty("IMP", impWindows);
         data.putProperty("FFT", fftWindows);
     }
 
     /**
-     * Do something when a new window is formed.
-     * Apply the impulsive sound algorithm and sends it to recognition if it is an impulsive sound.
+     * Apply the impulsive sound algorithm.
      *
      * @param timestamp: the timestamp of the window.
      * @param window: the window itself.
+     * @return {@code true} : if the window contains an impulsive sound;
+     *         {@code false}: if it does not contains an impulsive sound.
      */
-    private void onWindow(final long timestamp, final double[] window) {
-        final int start = 38, end = 64;
-
-        // Normalize window
-        // double[] normalizedWindow = MathUtils.normalize(window);
+    private boolean isImpulsive(final long timestamp, final double[] window) {
+        final int start = 30, end = 49;
 
         // Apply Fourier Transform to the window
+        final double[] paddedWindow = Arrays.copyOf(window, 128);
         final FastFourierTransformer transformer = new FastFourierTransformer(DftNormalization.UNITARY);
-        final Complex[] fftWindow = transformer.transform(window, TransformType.FORWARD);
+        final Complex[] fftWindow = transformer.transform(paddedWindow, TransformType.FORWARD);
 
         fftWindows.add(fftWindow);
 
@@ -92,26 +97,11 @@ public class ImpulsiveSoundDetector extends AudioServerExtension implements Audi
         // Checks if it is impulsive sound
         if (expectation.getReal() > 0.5 && variance.getReal() > 0.2) {
             log.info("Impulsive sound detected!");
-
-            // Extract sub-array from the transformed window
-            double[] numbersToRecognize = new double[end - start];
-            for (int i = 0; i < numbersToRecognize.length; i++)
-                numbersToRecognize[i] = fftWindow[start + i].getReal();
-
-            // Recognition phase
-            recognize(numbersToRecognize);
-
+            return true;
         }
 
-    }
+        return false;
 
-    /**
-     * Analyse the pre-processed input sample and checks if it's processed wave matches with a gunshot.
-     *
-     * @param processedSample: the sample to be recognized.
-     */
-    private void recognize(double[] processedSample) {
-        // TODO: Implement
     }
 
 }

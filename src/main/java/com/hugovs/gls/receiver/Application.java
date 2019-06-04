@@ -3,7 +3,7 @@ package com.hugovs.gls.receiver;
 import com.hugovs.gls.core.AudioServer;
 import com.hugovs.gls.core.AudioServerExtension;
 import com.hugovs.gls.core.util.StringUtils;
-import com.hugovs.gls.receiver.extensions.BipTriangulator;
+import com.hugovs.gls.receiver.extensions.GunshotDetector;
 import com.hugovs.gls.receiver.extensions.ImpulsiveSoundDetector;
 import com.hugovs.gls.receiver.extensions.WaveDrawer;
 import com.hugovs.gls.receiver.input.UdpAudioInput;
@@ -45,8 +45,8 @@ public class Application {
         AudioServer audioServer = new AudioServer(sampleRate, sampleSize);
         audioServer.setInput(new UdpAudioInput(55555, bufferSize));
         audioServer.addExtension(new ImpulsiveSoundDetector());
+        audioServer.addExtension(new GunshotDetector());
         audioServer.addExtension(new WaveDrawer());
-        // audioServer.addExtension(new BipTriangulator(70));
         audioServer.addExtension(extensions);
         audioServer.start();
     }
