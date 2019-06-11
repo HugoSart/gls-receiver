@@ -28,7 +28,7 @@ public class UdpAudioInput implements AudioInput {
      * @param totalBufferSize: the buffer size in bytes to store received data.
      */
     public UdpAudioInput(int port, int totalBufferSize) {
-        receive = new byte[totalBufferSize];
+        receive = new byte[totalBufferSize + 16];
         try {
             socket = new DatagramSocket(port);
         } catch (SocketException e) {

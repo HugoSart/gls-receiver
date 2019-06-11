@@ -5,7 +5,9 @@ import com.hugovs.gls.core.AudioInput;
 import com.hugovs.gls.core.AudioListener;
 import com.hugovs.gls.core.AudioServerExtension;
 import com.hugovs.gls.core.util.SynchronizedData;
+import com.hugovs.gls.receiver.util.MathUtils;
 import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.complex.ComplexUtils;
 import org.apache.log4j.Logger;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -220,7 +222,7 @@ public class WaveDrawer extends AudioServerExtension implements AudioListener {
 
         glColor4f(0, 1, 0, 0.1f);
         for (final Complex complex : fftWindows.get(0)) {
-            double y = Math.abs(complex.getReal()) / 10 - 1;
+            double y = complex.abs() / 10 - 1;
             glBegin(GL_QUADS);
             glVertex2d(k / aux + xOffset, -1);
             glVertex2d(k / aux + xOffset, y);
@@ -234,7 +236,7 @@ public class WaveDrawer extends AudioServerExtension implements AudioListener {
         xOffset = -1f;
         glColor4f(0, 0, 1, 0.1f);
         for (final Complex complex : fftWindows.get(fftWindows.size() - 1)) {
-            double y = Math.abs(complex.getReal()) / 10;
+            double y = complex.abs() / 10;
             glBegin(GL_QUADS);
             glVertex2d(k / aux + xOffset, 1);
             glVertex2d(k / aux + xOffset, 1 - y);

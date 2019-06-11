@@ -3,17 +3,14 @@ package com.hugovs.gls.receiver.extensions;
 import com.hugovs.gls.core.AudioData;
 import com.hugovs.gls.core.AudioListener;
 import com.hugovs.gls.core.AudioServerExtension;
-import com.hugovs.gls.core.util.StringUtils;
 import com.hugovs.gls.receiver.util.MathUtils;
 import edu.cmu.sphinx.frontend.*;
 import edu.cmu.sphinx.frontend.frequencywarp.MelFrequencyFilterBank;
 import edu.cmu.sphinx.frontend.transform.DiscreteCosineTransform2;
-import edu.cmu.sphinx.frontend.transform.DiscreteFourierTransform;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -27,7 +24,6 @@ public class GunshotDetector extends AudioServerExtension implements AudioListen
 
     @Override
     public void onDataReceived(AudioData data) {
-
         // Extract impulsive windows
         List<Complex[]> subFftImpWindows;
         try {
@@ -37,10 +33,15 @@ public class GunshotDetector extends AudioServerExtension implements AudioListen
         }
 
         // Apply gunshot detection algorithm to all impulsive windows
+        boolean isGunshot = false;
         for (Complex[] subFftImpWindow : subFftImpWindows) {
-            if (isGunshot(MathUtils.convertToDouble(subFftImpWindow))) log.info("Impulsive sound: GUNSHOT!");
+            boolean isWindowGunshot = isGunshot(MathUtils.convertToDouble(subFftImpWindow));
+            if (isWindowGunshot) log.info("Impulsive sound: GUNSHOT!");
             else log.info("Impulsive sound: other.");
+            if (isWindowGunshot) isGunshot = true;
         }
+
+        data.putProperty("GUNSHOT", isGunshot);
 
     }
 

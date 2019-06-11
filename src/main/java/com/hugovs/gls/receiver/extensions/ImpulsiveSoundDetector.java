@@ -93,7 +93,7 @@ public class ImpulsiveSoundDetector extends AudioServerExtension implements Audi
         final FastFourierTransformer transformer = new FastFourierTransformer(DftNormalization.UNITARY);
         final Complex[] fftWindow = transformer.transform(paddedWindow, TransformType.FORWARD);
 
-        fftWindows.add(fftWindow);
+        fftWindows.add(MathUtils.abs(fftWindow));
 
         // Calculate statistics
         final Complex[] subFFT = Arrays.copyOfRange(fftWindow, start, end);

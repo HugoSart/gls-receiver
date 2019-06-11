@@ -1,6 +1,9 @@
 package com.hugovs.gls.receiver.api;
 
 import com.google.gson.Gson;
+import com.hugovs.gls.receiver.api.model.Device;
+import com.hugovs.gls.receiver.api.model.Frequency;
+import com.hugovs.gls.receiver.api.model.Gunshot;
 import org.apache.log4j.Logger;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -11,6 +14,11 @@ import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * WebSocket API to send GLS data to the world.
+ *
+ * @author Hugo Sartori
+ */
 public class GunshotAPI extends WebSocketServer {
 
     private static final Logger log = Logger.getLogger(GunshotAPI.class);
@@ -36,13 +44,9 @@ public class GunshotAPI extends WebSocketServer {
     }
 
     @Override
-    public void onClose(WebSocket webSocket, int i, String s, boolean b) {
+    public void onClose(WebSocket webSocket, int code, String reason, boolean b) {
         try {
-            if (webSocket != null) {
-                log.info("Connection CLOSE on " + webSocket.getRemoteSocketAddress().getAddress().getHostAddress());
-            } else {
-                log.info("Connection CLOSE");
-            }
+            log.info("Connection CLOSE: "  + code);
         } catch (Exception e) {
             log.error("Failed to handle onClose", e);
         }
@@ -106,12 +110,32 @@ public class GunshotAPI extends WebSocketServer {
         log.info("GunshotAPI started on " + getPort());
     }
 
+    /**
+     * Send a frequency register on broadcast.
+     *
+     * @param deviceId: the device's id that refers to the extracted frequencies.
+     * @param ft: the data.
+     */
     public void sendFrequencies(long deviceId, final double[] ft) {
         final Message message = new Message("topic/device.frequency", gson.toJson(new Frequency(deviceId, ft)));
         broadcast(gson.toJson(message));
     }
 
-    private static class Message implements Serializable {
+    /**
+     * Send a gunshot register on broadcast.
+     *
+     * @param deviceId: the device's id that refers to the detected gunshot.
+     * @param timestamp: the timestamp that the gunshot was firstly captured.
+     */
+    public void sendGunshot(long deviceId, long timestamp) {
+        final Message message = new Message("topic/device.gunshot", gson.toJson(new Gunshot(deviceId, timestamp)));
+        broadcast(gson.toJson(message));
+    }
+
+    /**
+     * A class to encapsulate WebSocket messages in and out.
+     */
+    public static class Message implements Serializable {
         String destination;
         String body;
 
@@ -124,44 +148,6 @@ public class GunshotAPI extends WebSocketServer {
         public String toString() {
             return "Message<destination=" + destination + ", body=" + body + ">";
         }
-    }
-
-    private static class Device implements Serializable {
-        long id;
-        double latitude, longitude;
-
-        Device(long id, double latitude, double longitude) {
-            this.id = id;
-            this.latitude = latitude;
-            this.longitude = longitude;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return obj.equals(id);
-        }
-
-
-        @Override
-        public int hashCode() {
-            return Long.hashCode(id);
-        }
-
-        @Override
-        public String toString() {
-            return "Device<id=" + id + ", latitude=" + latitude + ", longitude=" + longitude + ">";
-        }
-    }
-
-    private static class Frequency implements Serializable {
-        long deviceId;
-        double[] values;
-
-        Frequency(long deviceId, double[] values) {
-            this.deviceId = deviceId;
-            this.values = values;
-        }
-
     }
 
 }

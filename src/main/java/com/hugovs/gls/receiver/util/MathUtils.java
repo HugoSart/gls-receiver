@@ -107,6 +107,13 @@ public class MathUtils {
         return absComplexes;
     }
 
+    public static double[] abs(final Complex[] complexes, boolean dValue) {
+        final double[] absComplexes = new double[complexes.length];
+        for (int i = 0; i < complexes.length; i++)
+            absComplexes[i] = complexes[i].abs();
+        return absComplexes;
+    }
+
     private static void checkSubarrayArguments(Object[] numbers, int start, int end) {
         if (start < 0 || end < 0 || end < start || end > numbers.length) throw new IllegalArgumentException();
     }
