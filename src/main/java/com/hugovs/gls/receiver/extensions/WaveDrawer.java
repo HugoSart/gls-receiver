@@ -6,7 +6,6 @@ import com.hugovs.gls.core.AudioListener;
 import com.hugovs.gls.core.AudioServerExtension;
 import com.hugovs.gls.core.util.SynchronizedData;
 import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.complex.ComplexUtils;
 import org.apache.log4j.Logger;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -15,7 +14,6 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -163,7 +161,6 @@ public class WaveDrawer extends AudioServerExtension implements AudioListener {
         // the window or has pressed the ESCAPE key.
         while (!glfwWindowShouldClose(window)) {
 
-            log.debug("Waiting for data");
             double currentTime = glfwGetTime();
             double deltaTime = currentTime - lastTime;
             lastTime = currentTime;

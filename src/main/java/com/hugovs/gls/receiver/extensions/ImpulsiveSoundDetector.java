@@ -27,6 +27,8 @@ public class ImpulsiveSoundDetector extends AudioServerExtension implements Audi
     private int windowsSizePowerOfTwo;
     private List<Complex[]> fftWindows;
     private List<double[]> impWindows;
+    private List<Complex[]> fftImpWindows;
+    private List<Complex[]> subFftImpWindows;
 
     /**
      * Do something when the {@link com.hugovs.gls.core.AudioServer} starts.
@@ -52,6 +54,8 @@ public class ImpulsiveSoundDetector extends AudioServerExtension implements Audi
         byte[] samples = data.getSamples();
         fftWindows = new ArrayList<>();
         impWindows = new ArrayList<>();
+        fftImpWindows = new ArrayList<>();
+        subFftImpWindows = new ArrayList<>();
 
         // Extract windows
         for (int i = 1; i < samples.length; i += 2, pos++) {
@@ -69,6 +73,8 @@ public class ImpulsiveSoundDetector extends AudioServerExtension implements Audi
 
         data.putProperty("IMP", impWindows);
         data.putProperty("FFT", fftWindows);
+        data.putProperty("FFT|IMP", fftImpWindows);
+        data.putProperty("SUB_FFT|IMP", subFftImpWindows);
     }
 
     /**
@@ -90,13 +96,15 @@ public class ImpulsiveSoundDetector extends AudioServerExtension implements Audi
         fftWindows.add(fftWindow);
 
         // Calculate statistics
-        final Complex[] absWindow = MathUtils.abs(fftWindow);
-        final Complex expectation = MathUtils.expectation(absWindow, start, end);
-        final Complex variance = MathUtils.variance(absWindow, start, end);
+        final Complex[] subFFT = Arrays.copyOfRange(fftWindow, start, end);
+        final Complex[] absFFT = MathUtils.abs(subFFT);
+        final Complex expectation = MathUtils.expectation(absFFT);
+        final Complex variance = MathUtils.variance(absFFT);
 
         // Checks if it is impulsive sound
         if (expectation.getReal() > 0.5 && variance.getReal() > 0.2) {
-            log.info("Impulsive sound detected!");
+            fftImpWindows.add(fftWindow);
+            subFftImpWindows.add(subFFT);
             return true;
         }
 
