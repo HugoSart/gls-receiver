@@ -24,7 +24,7 @@ public class GunshotAPIWorker extends AudioServerExtension implements AudioListe
             GunshotAPIManager.sendFrequencies(new Frequency(data.getSourceId(), first));
         }
 
-        if (data.hasProperty("GUNSHOT")) {
+        if (data.hasProperty("GUNSHOT") && (boolean)data.getProperty("GUNSHOT")) {
             GunshotAPIManager.sendGunshot(new Gunshot(data.getSourceId(), data.getTimestamp()));
         }
 

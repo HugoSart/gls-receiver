@@ -1,6 +1,7 @@
 package com.hugovs.gls.receiver.api;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.hugovs.gls.receiver.api.model.Device;
 import com.hugovs.gls.receiver.api.model.Frequency;
 import com.hugovs.gls.receiver.api.model.Gunshot;
@@ -9,10 +10,10 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
-import java.io.Serializable;
+import java.io.*;
 import java.net.InetSocketAddress;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
 
 /**
  * WebSocket API to send GLS data to the world.
@@ -23,8 +24,11 @@ public class GunshotAPI extends WebSocketServer {
 
     private static final Logger log = Logger.getLogger(GunshotAPI.class);
 
-    private final Set<Device> devices = new HashSet<>();
-    private final Gson gson = new Gson();
+    private DeviceSet devices = new DeviceSet();
+    private Gson gson = new Gson();
+    private FileReader dbReader;
+    private FileWriter dbWriter;
+
 
     public GunshotAPI(int port) {
         super(new InetSocketAddress(port));
@@ -46,7 +50,7 @@ public class GunshotAPI extends WebSocketServer {
     @Override
     public void onClose(WebSocket webSocket, int code, String reason, boolean b) {
         try {
-            log.info("Connection CLOSE: "  + code);
+            log.info("Connection CLOSE: " + code);
         } catch (Exception e) {
             log.error("Failed to handle onClose", e);
         }
@@ -66,18 +70,21 @@ public class GunshotAPI extends WebSocketServer {
                         final Device device = gson.fromJson(message.body, Device.class);
                         devices.add(device);
                         log.info("Added new device: " + device);
+                        updateDatabase();
                         break;
                     }
                     case "update": {
                         final Device device = gson.fromJson(message.body, Device.class);
                         devices.add(device);
                         log.info("Updated device: " + device);
+                        updateDatabase();
                         break;
                     }
                     case "delete": {
                         final Device device = gson.fromJson(message.body, Device.class);
                         devices.remove(device);
                         log.info("Deleted device: " + device);
+                        updateDatabase();
                         break;
                     }
                     case "fetch": {
@@ -107,6 +114,7 @@ public class GunshotAPI extends WebSocketServer {
 
     @Override
     public void onStart() {
+        loadDatabase();
         log.info("GunshotAPI started on " + getPort());
     }
 
@@ -114,7 +122,7 @@ public class GunshotAPI extends WebSocketServer {
      * Send a frequency register on broadcast.
      *
      * @param deviceId: the device's id that refers to the extracted frequencies.
-     * @param ft: the data.
+     * @param ft:       the data.
      */
     public void sendFrequencies(long deviceId, final double[] ft) {
         final Message message = new Message("topic/device.frequency", gson.toJson(new Frequency(deviceId, ft)));
@@ -124,12 +132,45 @@ public class GunshotAPI extends WebSocketServer {
     /**
      * Send a gunshot register on broadcast.
      *
-     * @param deviceId: the device's id that refers to the detected gunshot.
+     * @param deviceId:  the device's id that refers to the detected gunshot.
      * @param timestamp: the timestamp that the gunshot was firstly captured.
      */
     public void sendGunshot(long deviceId, long timestamp) {
         final Message message = new Message("topic/device.gunshot", gson.toJson(new Gunshot(deviceId, timestamp)));
         broadcast(gson.toJson(message));
+    }
+
+    private void loadDatabase() {
+        try {
+            dbReader = new FileReader("database.json");
+            devices = gson.fromJson(dbReader, DeviceSet.class);
+            if (devices == null) devices = new DeviceSet();
+        } catch (IOException | JsonSyntaxException e) {
+            log.error("Failed to load database", e);
+            devices = new DeviceSet();
+        }
+    }
+
+    private void updateDatabase() {
+
+        try {
+            dbWriter = new FileWriter("database.json");
+            gson.toJson(devices, dbWriter);
+            dbWriter.flush();
+            dbWriter.close();
+            log.info("Database updated");
+        } catch (IOException e) {
+            log.error("Failed to update database", e);
+        }
+    }
+
+    private void closeDatabase() {
+        try {
+            dbWriter.close();
+            dbReader.close();
+        } catch (IOException e) {
+            log.error("Failed to close database", e);
+        }
     }
 
     /**
@@ -148,6 +189,13 @@ public class GunshotAPI extends WebSocketServer {
         public String toString() {
             return "Message<destination=" + destination + ", body=" + body + ">";
         }
+    }
+
+    private static class DeviceSet extends HashSet<Device> implements Serializable {
+        DeviceSet() { }
+        DeviceSet(Collection c) { super(c); }
+        DeviceSet(int initialCapacity, float loadFactor) { super(initialCapacity, loadFactor); }
+        DeviceSet(int initialCapacity) { super(initialCapacity); }
     }
 
 }

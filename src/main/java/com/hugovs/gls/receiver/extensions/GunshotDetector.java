@@ -53,11 +53,8 @@ public class GunshotDetector extends AudioServerExtension implements AudioListen
     private double[] calculateMFCC(double[] window) {
         final ArrayList<DataProcessor> pipeline = new ArrayList<>();
         pipeline.add(new SingleValueAudioSource(window));
-        pipeline.add(new LogDataProcessor());
         pipeline.add(new MelFrequencyFilterBank(130, 6800, 4));
-        pipeline.add(new LogDataProcessor());
         pipeline.add(new DiscreteCosineTransform2(4, 22));
-        pipeline.add(new LogDataProcessor());
         FrontEnd f = new FrontEnd(pipeline);
 
 
