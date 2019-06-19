@@ -93,13 +93,6 @@ public class MathUtils {
         return expectation(numbers, 0, numbers.length - 1);
     }
 
-    public static double[] convertToDouble(final Complex[] c) {
-        final double[] ret = new double[c.length];
-        for (int i = 0; i < ret.length; i++)
-            ret[i] = c[i].getReal();
-        return ret;
-    }
-
     public static Complex[] abs(final Complex[] complexes) {
         final Complex[] absComplexes = new Complex[complexes.length];
         for (int i = 0; i < complexes.length; i++)

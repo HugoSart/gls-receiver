@@ -5,7 +5,7 @@ import com.hugovs.gls.core.AudioServerExtension;
 import com.hugovs.gls.core.util.StringUtils;
 import com.hugovs.gls.receiver.api.GunshotAPIManager;
 import com.hugovs.gls.receiver.extensions.GunshotDetector;
-import com.hugovs.gls.receiver.extensions.GunshotAPIWorker;
+import com.hugovs.gls.receiver.extensions.GunshotSender;
 import com.hugovs.gls.receiver.extensions.ImpulsiveSoundDetector;
 import com.hugovs.gls.receiver.extensions.WaveDrawer;
 import com.hugovs.gls.receiver.input.UdpAudioInput;
@@ -51,7 +51,7 @@ public class Application {
         audioServer.addExtension(new ImpulsiveSoundDetector());
         audioServer.addExtension(new GunshotDetector());
         audioServer.addExtension(new WaveDrawer());
-        audioServer.addExtension(new GunshotAPIWorker());
+        audioServer.addExtension(new GunshotSender());
         audioServer.addExtension(extensions);
         audioServer.start();
     }

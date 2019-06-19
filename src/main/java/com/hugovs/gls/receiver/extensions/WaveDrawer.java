@@ -6,6 +6,7 @@ import com.hugovs.gls.core.AudioListener;
 import com.hugovs.gls.core.AudioServerExtension;
 import com.hugovs.gls.core.util.SynchronizedData;
 import com.hugovs.gls.receiver.util.MathUtils;
+import com.hugovs.gls.receiver.util.Property;
 import org.apache.commons.math3.complex.Complex;
 import org.apache.commons.math3.complex.ComplexUtils;
 import org.apache.log4j.Logger;
@@ -208,13 +209,13 @@ public class WaveDrawer extends AudioServerExtension implements AudioListener {
         glVertex2d(2, 2);
         glEnd();
 
-        if (data.hasProperty("FFT"))
+        if (data.hasProperty(Property.FFT.name()))
             renderWindow(data);
 
     }
 
     private void renderWindow(AudioData data) {
-        final List<Complex[]> fftWindows = (List<Complex[]>) data.getProperty("FFT");
+        final List<Complex[]> fftWindows = (List<Complex[]>) data.getProperty(Property.FFT.name());
 
         float aux = fftWindows.get(0).length * 8;
         int k = 0;

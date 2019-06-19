@@ -140,6 +140,9 @@ public class GunshotAPI extends WebSocketServer {
         broadcast(gson.toJson(message));
     }
 
+    /**
+     * Load the database from the database.json file.
+     */
     private void loadDatabase() {
         try {
             dbReader = new FileReader("database.json");
@@ -151,6 +154,9 @@ public class GunshotAPI extends WebSocketServer {
         }
     }
 
+    /**
+     * Update the data in the database.json file.
+     */
     private void updateDatabase() {
 
         try {

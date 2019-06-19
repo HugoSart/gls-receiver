@@ -3,6 +3,7 @@
     <words>
       <w>glfw</w>
       <w>lwjgl</w>
+      <w>mfcc</w>
       <w>triangulator</w>
     </words>
   </dictionary>

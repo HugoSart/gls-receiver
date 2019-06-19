@@ -12,15 +12,15 @@ import org.apache.log4j.Logger;
 
 import java.util.List;
 
-public class GunshotAPIWorker extends AudioServerExtension implements AudioListener {
+public class GunshotSender extends AudioServerExtension implements AudioListener {
 
-    private static final Logger log = Logger.getLogger(GunshotAPIWorker.class);
+    private static final Logger log = Logger.getLogger(GunshotSender.class);
 
     @Override
     public void onDataReceived(AudioData data) {
         if (data.hasProperty("FFT")) {
             final List<Complex[]> fftWindows = (List<Complex[]>) data.getProperty("FFT");
-            final double[] first = MathUtils.convertToDouble(fftWindows.get(0));
+            final double[] first = MathUtils.abs(fftWindows.get(0), true);
             GunshotAPIManager.sendFrequencies(new Frequency(data.getSourceId(), first));
         }
 
